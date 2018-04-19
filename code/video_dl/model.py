@@ -7,7 +7,7 @@ import torch.utils.model_zoo
 from torch.autograd import Variable
 use_cuda = torch.cuda.is_available()
 
-class Classifier(Module):
+class Classifier(nn.Module):
     '''
     Standard multilayer perceptron classifier.
     '''
@@ -98,10 +98,82 @@ class AnomalyModel(nn.Module):
         return loss
     
     def forward(self, input_t):
+        '''
+        Arguments:
+        - input_t (:obj: `torch.Tensor`) of size (331, 331, 3), which is essentially a picture. 
+
+        Returns:
+        - classification (:obj: `torch.Tensor`) of size (nb_classes)
+        '''
+        input_t = input_t.unsqueeze(0)
         features = self._vision_features(input_t)
         new_hidden = self._gru_cell(features, self._previous_hidden)
         self._previous_hidden = new_hidden
         classification = self.classifier(new_hidden)
+        classification = classification.squeeze()
+        return classification
+    
+    def trainable_parameters(self):
+        return filter(lambda p: p.requires_grad,
+            super(AnomalyModel, self).parameters())
+
+    def use_cuda(self):
+        return use_cuda
+
+
+class BetterAnomalyModel(nn.Module):
+
+    def __init__(self, output_dim, gru_dropout, seq_len):
+        super(BetterAnomalyModel, self).__init__()
+        #1. Get a vgg16 or something model from torchvision
+        self._output_dim = output_dim   # THe dimension of the output by the resnet network.
+        self._hidden_size = output_dim
+        self._gru_dropout = gru_dropout
+        self._seq_len = seq_len
+        self._seq_pack = torch.zeros((self._seq_len, self._output_dim))
+
+        self._vision_features = torchvision.models.resnet50(pretrained = True)
+        self._vision_features.fc = Identity()
+        
+        #TODO: FIgure out the size of the output of vision_features
+        #4. Create RNN module
+        self._gru = nn.GRU(self._output_dim, self._hidden_size, bidirectional = False,
+                            batch_first = False, drouput = self._gru_dropout)
+        
+        self._classifier = Classifier(2, self._hidden_size)
+        self._criterion = nn.NLLLoss()
+
+        #5. Store previous hidden layer here.
+    
+        if use_cuda:
+            self._previous_hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size)).cuda()
+        else:
+            self._previous_hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size))
+        
+    def loss(self, input_t, ground_truth):
+        classification = self.forward(input_t)
+        loss = self.criterion(classification, ground_truth)
+        return loss
+    
+    def forward(self, input_t):
+        '''
+        Arguments:
+        - input_t (:obj: `torch.Tensor`) of size (331, 331, 3), which is essentially a picture. 
+
+        Returns:
+        - classification (:obj: `torch.Tensor`) of size (nb_classes)
+        '''
+        input_t = input_t.unsqueeze(0)
+        features = self._vision_features(input_t)  #output should be (1, output_dim)
+        frame_sequence = torch.cat([features, self._seq_pack[1:]])
+        frame_sequence = torch.unsqueeze(frame_sequence, 1)
+        #TODO: Test in the opposite direction
+        #frame_sequence = torch.cat([self._seq_pack[:-1], features])
+        
+        new_hidden = self._gru(frame_sequence, self._previous_hidden)
+        self._previous_hidden = new_hidden
+        classification = self.classifier(new_hidden)
+        classification = classification.squeeze()
         return classification
     
     def trainable_parameters(self):
