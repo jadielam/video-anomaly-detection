@@ -1,3 +1,5 @@
+from torch.autograd import Variable
+
 from anomaly_models import BetterAnomalyModel
 import config
 
@@ -9,11 +11,13 @@ def change_phase_factory():
         loss_history.append(loss)
         classification_history.append(classification)
 
-        #TODO: This is a stub
+        if loss.data.item() < 0.05:
+            return True
         return False
 
 def is_anomaly(classification):
-    #TODO: THis is a stub
+    if classification[0] > 0.5:
+        return True
     return False
 
 def anomaly_detection_proc(frames_queue, conf):
@@ -32,9 +36,8 @@ def anomaly_detection_proc(frames_queue, conf):
             break
         _, frame = message
 
-        #TODO: Pass the right target format here
         if phase == "TRAINING":
-            loss, classification = model.loss(frame, [0, 1])
+            loss, classification = model.loss(frame, Variable(torch.Tensor([0, 1])))
             if change_phase(loss, classification):
                 phase = "DETECTION"
                 print("NOW IN DETECTION PHASE")
