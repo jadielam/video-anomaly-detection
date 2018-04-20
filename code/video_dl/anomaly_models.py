@@ -120,7 +120,6 @@ class AnomalyModel(nn.Module):
     def use_cuda(self):
         return use_cuda
 
-
 class BetterAnomalyModel(nn.Module):
 
     def __init__(self, output_dim, gru_dropout, seq_len):
@@ -153,7 +152,7 @@ class BetterAnomalyModel(nn.Module):
     def loss(self, input_t, ground_truth):
         classification = self.forward(input_t)
         loss = self.criterion(classification, ground_truth)
-        return loss
+        return loss, classification
     
     def forward(self, input_t):
         '''
