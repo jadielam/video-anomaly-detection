@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --allow-downgrades --no-install-recomme
          curl \
          vim \
          ca-certificates \
-         libnccl2=2.0.5-3+cuda8.0 \
-         libnccl-dev=2.0.5-3+cuda8.0 \
+         libnccl2=2.0.5-2+cuda8.0 \
+         libnccl-dev=2.0.5-2+cuda8.0 \
          libjpeg-dev \
          libpng-dev &&\
      rm -rf /var/lib/apt/lists/*
@@ -31,7 +31,7 @@ RUN curl -o ~/miniconda.sh -O https://repo.continuum.io/miniconda/Miniconda3-lat
      /opt/conda/bin/conda create -y --name pytorch-py$PYTHON_VERSION python=$PYTHON_VERSION numpy pyyaml scipy ipython notebook mkl&& \
      /opt/conda/bin/conda clean -ya 
 ENV PATH /opt/conda/envs/pytorch-py$PYTHON_VERSION/bin:$PATH
-RUN /opt/conda/bin/conda install --name pytorch-py$PYTHON_VERSION -c soumith magma-cuda80
+RUN /opt/conda/bin/conda install --name pytorch-py$PYTHON_VERSION -c soumith cuda80
 RUN pip install mkl-devel
 
 # Installing pytorch
