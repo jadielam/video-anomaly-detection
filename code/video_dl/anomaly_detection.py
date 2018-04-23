@@ -45,19 +45,3 @@ def anomaly_detection_proc(frames_queue, conf):
             classification = model.forward(frame)
             if is_anomaly(classification):
                 print("ANOMALY DETECTED")
-
-
-        
-            
-
-    #2. while not finish_signal
-    #2.1 Get frame from queue
-    
-    #2.2 if phase is TRAINING:
-    #2.2.1 Submit frame for model training
-    #2.2.2 Get back the results from training
-    #2.2.3 Check history of results to see if phase changes
-    
-    #2.3 else if phase is ANOMALY:
-    #2.3.1 Submit frame for model forward
-    #2.3.2 Get back results and determine if normal or anomaly.
