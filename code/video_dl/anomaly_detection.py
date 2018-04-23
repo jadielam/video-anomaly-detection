@@ -1,3 +1,4 @@
+import torch
 from torch.autograd import Variable
 
 from anomaly_models import BetterAnomalyModel
@@ -14,6 +15,8 @@ def change_phase_factory():
         if loss.data.item() < 0.05:
             return True
         return False
+    
+    return change_phase
 
 def is_anomaly(classification):
     if classification[0] > 0.5:

@@ -50,6 +50,7 @@ RUN git clone https://github.com/pytorch/vision.git && cd vision && pip install 
 RUN pip install torchvision
 RUN pip install pandas
 RUN pip install scikit-learn
+RUN pip install imageio
 
 #WORKDIR /workspace
 #RUN chmod -R a+w /workspace
