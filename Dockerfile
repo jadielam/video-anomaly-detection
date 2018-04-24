@@ -57,8 +57,8 @@ RUN pip install imageio
 
 # Add code to folder
 RUN mkdir -p /src
-ADD code/ /src/deep_learning_text
-ENV PYTHONPATH='$PYTHONPATH:/src/deep_learning_text'
+ADD code/ /src/video-anomaly-detection
+ENV PYTHONPATH='$PYTHONPATH:/src/video-anomaly-detection'
 
 #EXPOSE 8888
 #ENTRYPOINT ["/bin/bash", "-c", "jupyter notebook --ip='*' --allow-root --no-browser --port=8888"]

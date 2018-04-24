@@ -39,6 +39,7 @@ def main():
     states_seq = conf['generator']['states_seq']
     max_nb_steps = conf['generator']['max_nb_steps']
     images_path_list = [os.path.join(images_folder, a) for a in os.listdir(images_folder) if a.endswith(".png")]
+    images_path_list.sort()
     images_list = [imageio.imread(im_path) for im_path in images_path_list]
 
     #2. Model parameters:
