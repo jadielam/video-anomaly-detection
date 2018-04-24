@@ -6,6 +6,7 @@ import random
 import imageio
 import torch
 from torch.autograd import Variable
+from torch import optim
 
 import config
 from anomaly_models import BetterAnomalyModel
@@ -46,6 +47,10 @@ def main():
     output_dim = conf['model']['output_dim']
     model = BetterAnomalyModel(output_dim, gru_dropout, seq_len)
     
+    #3. Optimizer parameters:
+    lr = conf['optimizer']['lr']
+    optimizer = optim.Adam(lr = lr, params = model.trainable_parameters())
+
     #4. Start the learning process
     nb_steps = 0
     states_seq_idx = -1
@@ -60,9 +65,13 @@ def main():
         if phase == "TRAINING":
             next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
             loss, classification = model.loss(next_frame, Variable(torch.Tensor([0, 1])))
+            loss.backward()
+            optimizer.step()
+
             if change_phase(loss, classification) or nb_steps > max_nb_steps:
                 phase = "ANOMALY_DETECTION"
                 print("In ANOMALY DETECTION phase")
+            
         
         if phase == "ANOMALY DETECTION":
             if random.random() > 0.9:
