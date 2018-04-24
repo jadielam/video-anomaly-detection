@@ -137,7 +137,7 @@ class BetterAnomalyModel(nn.Module):
         #TODO: FIgure out the size of the output of vision_features
         #4. Create RNN module
         self._gru = nn.GRU(self._output_dim, self._hidden_size, bidirectional = False,
-                            batch_first = False, drouput = self._gru_dropout)
+                            batch_first = False, droupout = self._gru_dropout)
         
         self._classifier = Classifier(2, self._hidden_size)
         self._criterion = nn.NLLLoss()
