@@ -47,11 +47,12 @@ def main():
     normalize = transforms.Normalize(mean = [0.485, 0.456, 0.406],
                                     std = [0.229, 0.224, 0.225])
     c_transforms = transforms.Compose([
-        transforms.Resize(224),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
         normalize
     ])
     images_list = [c_transforms(a) for a in images_list]
+    images_list = [a[:,:,:3] for a in images_list]
 
     #2. Model parameters:
     seq_len = conf['model']['seq_len']
@@ -75,6 +76,7 @@ def main():
 
         if phase == "TRAINING":
             next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
+            next_frame = Variable(next_frame)
             loss, classification = model.loss(next_frame, Variable(torch.Tensor([0, 1])))
             loss.backward()
             optimizer.step()
@@ -92,6 +94,7 @@ def main():
                 next_frame = images_list[random_idx]
             else:    
                 next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
+            next_frame = Variable(next_frame)
             classification = model.forward(next_frame)
             if is_anomaly(classification):
                 print("ANOMALY DETECTED")
