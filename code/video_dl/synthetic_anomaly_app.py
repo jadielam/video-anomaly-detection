@@ -3,7 +3,7 @@ import sys
 import json
 import random
 
-import imageio
+from PIL import Image
 import torch
 from torch.autograd import Variable
 from torch import optim
@@ -41,7 +41,7 @@ def main():
     max_nb_steps = conf['generator']['max_nb_steps']
     images_path_list = [os.path.join(images_folder, a) for a in os.listdir(images_folder) if a.endswith(".png")]
     images_path_list.sort()
-    images_list = [imageio.imread(im_path) for im_path in images_path_list]
+    images_list = [Image.open(im_path) for im_path in images_path_list]
     
     #1.1 Transform image list:
     normalize = transforms.Normalize(mean = [0.485, 0.456, 0.406],
