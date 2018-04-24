@@ -7,6 +7,7 @@ import imageio
 import torch
 from torch.autograd import Variable
 from torch import optim
+import torchvision.transforms as transforms
 
 import config
 from anomaly_models import BetterAnomalyModel
@@ -41,16 +42,25 @@ def main():
     images_path_list = [os.path.join(images_folder, a) for a in os.listdir(images_folder) if a.endswith(".png")]
     images_path_list.sort()
     images_list = [imageio.imread(im_path) for im_path in images_path_list]
+    
+    #1.1 Transform image list:
+    normalize = transforms.Normalize(mean = [0.485, 0.456, 0.406],
+                                    std = [0.229, 0.224, 0.225])
+    c_transforms = transforms.Compose([
+        transforms.Resize(224),
+        transforms.ToTensor(),
+        normalize
+    ])
+    images_list = [c_transforms(a) for a in images_list]
 
     #2. Model parameters:
     seq_len = conf['model']['seq_len']
     gru_dropout = conf['model']['gru_dropout']
-    output_dim = conf['model']['output_dim']
-    model = BetterAnomalyModel(output_dim, gru_dropout, seq_len)
+    model = BetterAnomalyModel(gru_dropout, seq_len)
     
     #3. Optimizer parameters:
-    lr = conf['optimizer']['lr']
-    optimizer = optim.Adam(lr = lr, params = model.trainable_parameters())
+    l_r = conf['optimizer']['lr']
+    optimizer = optim.Adam(lr = l_r, params = model.trainable_parameters())
 
     #4. Start the learning process
     nb_steps = 0
