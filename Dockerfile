@@ -1,8 +1,8 @@
 # To Build:
-# docker build -t training -f Dockerfile .
+# docker build -t anomaly -f Dockerfile .
 
 # To run:
-# nvidia-docker run -it training
+# nvidia-docker run -it anomaly
 
 FROM nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04 
 
