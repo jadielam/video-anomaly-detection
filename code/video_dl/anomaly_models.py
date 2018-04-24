@@ -69,11 +69,11 @@ class Identity(nn.Module):
 
 class AnomalyModel(nn.Module):
 
-    def __init__(self, output_dim, gru_dropout):
+    def __init__(self, gru_dropout):
         super(AnomalyModel, self).__init__()
         #1. Get a vgg16 or something model from torchvision
-        self._output_dim = output_dim
-        self._hidden_size = output_dim
+        self._output_dim = 2048
+        self._hidden_size = self._output_dim
         self._gru_dropout = gru_dropout
 
         self._vision_features = torchvision.models.resnet50(pretrained = True)
@@ -122,11 +122,11 @@ class AnomalyModel(nn.Module):
 
 class BetterAnomalyModel(nn.Module):
 
-    def __init__(self, output_dim, gru_dropout, seq_len):
+    def __init__(self, gru_dropout, seq_len):
         super(BetterAnomalyModel, self).__init__()
         #1. Get a vgg16 or something model from torchvision
-        self._output_dim = output_dim   # THe dimension of the output by the resnet network.
-        self._hidden_size = output_dim
+        self._output_dim = 2048   # THe dimension of the output by the resnet network.
+        self._hidden_size = self._output_dim
         self._gru_dropout = gru_dropout
         self._seq_len = seq_len
         self._seq_pack = torch.zeros((self._seq_len, self._output_dim))

@@ -47,7 +47,6 @@ RUN TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1+PTX" TORCH_NVCC_FLAGS="-Xfatbin -compr
 RUN git clone https://github.com/pytorch/vision.git && cd vision && pip install -v .
 
 # Installing pytorch text
-RUN pip install torchvision
 RUN pip install pandas
 RUN pip install scikit-learn
 RUN pip install imageio
