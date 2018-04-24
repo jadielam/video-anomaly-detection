@@ -52,7 +52,7 @@ def main():
         normalize
     ])
     images_list = [c_transforms(a) for a in images_list]
-    images_list = [a[:,:,:3] for a in images_list]
+    images_list = [a[:3,:,:] for a in images_list]
 
     #2. Model parameters:
     seq_len = conf['model']['seq_len']

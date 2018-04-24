@@ -129,7 +129,10 @@ class BetterAnomalyModel(nn.Module):
         self._hidden_size = self._output_dim
         self._gru_dropout = gru_dropout
         self._seq_len = seq_len
-        self._seq_pack = torch.zeros((self._seq_len, self._output_dim))
+        if use_cuda:
+            self._seq_pack = torch.zeros((self._seq_len, self._output_dim)).cuda()
+        else:
+            self._seq_pack = torch.zeros((self._seq_len, self._output_dim))
 
         self._vision_features = torchvision.models.resnet50(pretrained = True)
         self._vision_features.fc = Identity()
@@ -164,11 +167,12 @@ class BetterAnomalyModel(nn.Module):
         '''
         input_t = input_t.unsqueeze(0)
         features = self._vision_features(input_t)  #output should be (1, output_dim)
-        frame_sequence = torch.cat([features, self._seq_pack[1:]])
-        frame_sequence = torch.unsqueeze(frame_sequence, 1)
+        frame_sequence = torch.cat([features, self._seq_pack[:-1]])
         #TODO: Test in the opposite direction
-        #frame_sequence = torch.cat([self._seq_pack[:-1], features])
+        #frame_sequence = torch.cat([self._seq_pack[1:], features])
         
+        self._seq_pack = frame_sequence.copy()
+        frame_sequence = torch.unsqueeze(frame_sequence, 1)
         new_hidden = self._gru(frame_sequence, self._previous_hidden)
         self._previous_hidden = new_hidden
         classification = self.classifier(new_hidden)
