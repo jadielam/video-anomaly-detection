@@ -150,10 +150,10 @@ class BetterAnomalyModel(nn.Module):
         
     def loss(self, input_t, ground_truth):
         classification = self.forward(input_t)
-        loss = self.criterion(classification, ground_truth)
+        loss = self._criterion(classification, ground_truth)
         return loss, classification
     
-    def init_hidden():
+    def init_hidden(self):
         if use_cuda:
             hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size)).cuda()
         else:
@@ -171,7 +171,7 @@ class BetterAnomalyModel(nn.Module):
         features = self._vision_features(input_t)  #output should be (1, output_dim)
         features = torch.unsqueeze(features, 1)
         _, hidden_out = self._gru(features, self.init_hidden())
-        classification = self.classifier(hidden_out)
+        classification = self._classifier(hidden_out)
         classification = classification.squeeze()
         return classification
     

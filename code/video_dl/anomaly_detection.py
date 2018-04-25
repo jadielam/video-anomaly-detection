@@ -1,7 +1,11 @@
 import torch
+from torch import optim
 from torch.autograd import Variable
+import torchvision.transforms as transforms
+
 
 from anomaly_models import BetterAnomalyModel
+from anomaly_models import use_cuda
 import config
 
 def change_phase_factory():
@@ -25,11 +29,22 @@ def is_anomaly(classification):
 
 def anomaly_detection_proc(frames_queue, conf):
     
+    #0. Create transformation pipeline
+    normalize = transforms.Normalize(mean = [0.485, 0.456, 0.406],
+                                    std = [0.229, 0.224, 0.225])
+    c_transforms = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        normalize
+    ])
+
     #1. Create the model
     seq_len = conf['model']['seq_len']
     gru_dropout = conf['model']['gru_dropout']
-    output_dim = conf['model']['output_dim']
-    model = BetterAnomalyModel(output_dim, gru_dropout, seq_len)
+    model = BetterAnomalyModel(gru_dropout, seq_len)
+    if use_cuda:
+        model = model.cuda()
+    
     change_phase = change_phase_factory()
     phase = "TRAINING"
 

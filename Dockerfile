@@ -38,7 +38,7 @@ RUN pip install mkl-devel
 WORKDIR /opt
 RUN git clone https://github.com/pytorch/pytorch
 WORKDIR /opt/pytorch
-#RUN git checkout tags/v0.3.1
+RUN ls
 RUN git submodule update --init
 RUN TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1+PTX" TORCH_NVCC_FLAGS="-Xfatbin -compress-all" \
     CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" \
