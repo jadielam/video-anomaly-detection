@@ -72,9 +72,9 @@ def main():
     print("In TRAINING phase")
 
     if use_cuda:
-        seq_pack = torch.zeros((seq_len, images_list.shape[0], images_list.shape[1], images_list.shape[2])).cuda()
+        seq_pack = torch.zeros((seq_len, images_list[0].shape[0], images_list[0].shape[1], images_list[0].shape[2])).cuda()
     else:
-        seq_pack = torch.zeros((seq_len, images_list.shape[0], images_list.shape[1], images_list.shape[2]))
+        seq_pack = torch.zeros((seq_len, images_list[0].shape[0], images_list[0].shape[1], images_list[0].shape[2]))
 
     while True:
         states_seq_idx += 1
