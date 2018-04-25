@@ -130,6 +130,7 @@ class BetterAnomalyModel(nn.Module):
         self._gru_dropout = gru_dropout
         
         self._vision_features = torchvision.models.resnet50(pretrained = True)
+
         self._vision_features.fc = Identity()
         
         #TODO: FIgure out the size of the output of vision_features
@@ -152,6 +153,13 @@ class BetterAnomalyModel(nn.Module):
         loss = self.criterion(classification, ground_truth)
         return loss, classification
     
+    def init_hidden():
+        if use_cuda:
+            hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size)).cuda()
+        else:
+            hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size))
+        return hidden
+
     def forward(self, input_t):
         '''
         Arguments:
@@ -162,7 +170,7 @@ class BetterAnomalyModel(nn.Module):
         '''
         features = self._vision_features(input_t)  #output should be (1, output_dim)
         features = torch.unsqueeze(features, 1)
-        _, hidden_out = self._gru(features, self._init_hidden)
+        _, hidden_out = self._gru(features, self.init_hidden())
         classification = self.classifier(hidden_out)
         classification = classification.squeeze()
         return classification

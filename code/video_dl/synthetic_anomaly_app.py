@@ -59,6 +59,8 @@ def main():
     seq_len = conf['model']['seq_len']
     gru_dropout = conf['model']['gru_dropout']
     model = BetterAnomalyModel(gru_dropout, seq_len)
+    if use_cuda:
+        model = model.cuda()
     
     #3. Optimizer parameters:
     l_r = conf['optimizer']['lr']
@@ -84,7 +86,7 @@ def main():
             next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]].unsqueeze(0)
             frame_sequence = torch.cat([next_frame, seq_pack[:-1]])
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])
-            seq_pack = frame_sequence.copy()
+            seq_pack = frame_sequence.clone()
             frame_sequence = Variable(frame_sequence)
             loss, classification = model.loss(frame_sequence, Variable(torch.Tensor([0, 1])))
             loss.backward()
@@ -105,7 +107,7 @@ def main():
             
             frame_sequence = torch.cat([next_frame, seq_pack[:-1]])
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])
-            seq_pack = frame_sequence.copy()
+            seq_pack = frame_sequence.clone()
             frame_sequence = Variable(frame_sequence)
             
             classification = model.forward(frame_sequence)
