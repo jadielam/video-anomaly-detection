@@ -88,7 +88,7 @@ def main():
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])
             seq_pack = frame_sequence.clone()
             frame_sequence = Variable(frame_sequence)
-            loss, classification = model.loss(frame_sequence, Variable(torch.Tensor([0, 1])).unsqueeze())
+            loss, classification = model.loss(frame_sequence, Variable(torch.tensor([1], dtype = torch.long)).cuda())
             loss.backward()
             optimizer.step()
 
@@ -99,7 +99,7 @@ def main():
         if phase == "ANOMALY DETECTION":
             if random.random() > 0.9:
                 random_idx = random.choice(states_seq)
-                if random_idx != states_seq_idx % len(states_seq):
+                if random_idx != states_seq[states_seq_idx % len(states_seq))]:
                     print("ANOMALY INTRODUCED")
                 next_frame = images_list[random_idx]
             else:    

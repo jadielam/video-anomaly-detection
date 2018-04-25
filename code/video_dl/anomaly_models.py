@@ -73,7 +73,7 @@ class AnomalyModel(nn.Module):
         super(AnomalyModel, self).__init__()
         #1. Get a vgg16 or something model from torchvision
         self._output_dim = 2048
-        self._hidden_size = self._output_dim
+        self._hidden_size = 100
         self._gru_dropout = gru_dropout
 
         self._vision_features = torchvision.models.resnet50(pretrained = True)
@@ -126,7 +126,7 @@ class BetterAnomalyModel(nn.Module):
         super(BetterAnomalyModel, self).__init__()
         #1. Get a vgg16 or something model from torchvision
         self._output_dim = 2048   # THe dimension of the output by the resnet network.
-        self._hidden_size = self._output_dim
+        self._hidden_size = 350
         self._gru_dropout = gru_dropout
         
         self._vision_features = torchvision.models.resnet50(pretrained = True)
@@ -172,6 +172,7 @@ class BetterAnomalyModel(nn.Module):
         features = torch.unsqueeze(features, 1)
         _, hidden_out = self._gru(features, self.init_hidden())
         classification = self._classifier(hidden_out)
+        classification = classification.view(1, -1)
         return classification
     
     def trainable_parameters(self):
