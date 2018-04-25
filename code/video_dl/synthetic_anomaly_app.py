@@ -28,7 +28,7 @@ def change_phase_factory():
     return change_phase
 
 def is_anomaly(classification):
-    if classification[0][1] > 0.5:
+    if classification[0][1] > -0.69:
         return True
     return False
 
@@ -83,7 +83,14 @@ def main():
         nb_steps += 1
 
         if phase == "TRAINING":
-            next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]].unsqueeze(0)
+            target = Variable(torch.tensor([0], dtype = torch.long)).cuda()
+            if random.random() > 0.6:
+                random_idx = random.choice(states_seq)
+                if random_idx != states_seq[states_seq_idx % len(states_seq)]:
+                    target = Variable(torch.tensor([1], dtype = torch.long)).cuda()
+                next_frame = images_list[random_idx].unsqueeze(0)
+            else:
+                next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]].unsqueeze(0)
             frame_sequence = torch.cat([next_frame, seq_pack[:-1]])
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])
             seq_pack = frame_sequence.clone()
