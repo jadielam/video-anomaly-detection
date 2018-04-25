@@ -28,7 +28,7 @@ def change_phase_factory():
     return change_phase
 
 def is_anomaly(classification):
-    if classification[0] > 0.5:
+    if classification[0][0] > 0.5:
         return True
     return False
 
@@ -88,7 +88,7 @@ def main():
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])
             seq_pack = frame_sequence.clone()
             frame_sequence = Variable(frame_sequence)
-            loss, classification = model.loss(frame_sequence, Variable(torch.Tensor([0, 1])).expand(seq_len, 2))
+            loss, classification = model.loss(frame_sequence, Variable(torch.Tensor([0, 1])).unsqueeze())
             loss.backward()
             optimizer.step()
 

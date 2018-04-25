@@ -172,7 +172,6 @@ class BetterAnomalyModel(nn.Module):
         features = torch.unsqueeze(features, 1)
         _, hidden_out = self._gru(features, self.init_hidden())
         classification = self._classifier(hidden_out)
-        classification = classification.squeeze()
         return classification
     
     def trainable_parameters(self):
