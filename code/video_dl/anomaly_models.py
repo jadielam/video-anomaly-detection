@@ -128,12 +128,7 @@ class BetterAnomalyModel(nn.Module):
         self._output_dim = 2048   # THe dimension of the output by the resnet network.
         self._hidden_size = self._output_dim
         self._gru_dropout = gru_dropout
-        self._seq_len = seq_len
-        if use_cuda:
-            self._seq_pack = torch.zeros((self._seq_len, self._output_dim)).cuda()
-        else:
-            self._seq_pack = torch.zeros((self._seq_len, self._output_dim))
-
+        
         self._vision_features = torchvision.models.resnet50(pretrained = True)
         self._vision_features.fc = Identity()
         
@@ -148,9 +143,9 @@ class BetterAnomalyModel(nn.Module):
         #5. Store previous hidden layer here.
     
         if use_cuda:
-            self._previous_hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size)).cuda()
+            self._init_hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size)).cuda()
         else:
-            self._previous_hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size))
+            self._init_hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size))
         
     def loss(self, input_t, ground_truth):
         classification = self.forward(input_t)
@@ -160,22 +155,15 @@ class BetterAnomalyModel(nn.Module):
     def forward(self, input_t):
         '''
         Arguments:
-        - input_t (:obj: `torch.Tensor`) of size (331, 331, 3), which is essentially a picture. 
+        - input_t (:obj: `torch.Tensor`) of size (16, 3, 331, 331), which is essentially a picture. 
 
         Returns:
         - classification (:obj: `torch.Tensor`) of size (nb_classes)
         '''
-        input_t = input_t.unsqueeze(0)
         features = self._vision_features(input_t)  #output should be (1, output_dim)
-        frame_sequence = torch.cat([features, self._seq_pack[:-1]])
-        #TODO: Test in the opposite direction
-        #frame_sequence = torch.cat([self._seq_pack[1:], features])
-        
-        self._seq_pack = frame_sequence.copy()
-        frame_sequence = torch.unsqueeze(frame_sequence, 1)
-        new_hidden = self._gru(frame_sequence, self._previous_hidden)
-        self._previous_hidden = new_hidden
-        classification = self.classifier(new_hidden)
+        features = torch.unsqueeze(features, 1)
+        _, hidden_out = self._gru(features, self._init_hidden)
+        classification = self.classifier(hidden_out)
         classification = classification.squeeze()
         return classification
     
