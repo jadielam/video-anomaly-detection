@@ -28,7 +28,7 @@ def change_phase_factory():
     return change_phase
 
 def is_anomaly(classification):
-    if classification[0][0] > 0.5:
+    if classification[0][1] > 0.5:
         return True
     return False
 
@@ -74,9 +74,9 @@ def main():
     print("In TRAINING phase")
 
     if use_cuda:
-        seq_pack = torch.zeros((seq_len, images_list[0].shape[0], images_list[0].shape[1], images_list[0].shape[2])).cuda()
+        seq_pack = torch.randn((seq_len, images_list[0].shape[0], images_list[0].shape[1], images_list[0].shape[2])).cuda()
     else:
-        seq_pack = torch.zeros((seq_len, images_list[0].shape[0], images_list[0].shape[1], images_list[0].shape[2]))
+        seq_pack = torch.randn((seq_len, images_list[0].shape[0], images_list[0].shape[1], images_list[0].shape[2]))
 
     while True:
         states_seq_idx += 1
@@ -88,7 +88,7 @@ def main():
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])
             seq_pack = frame_sequence.clone()
             frame_sequence = Variable(frame_sequence)
-            loss, classification = model.loss(frame_sequence, Variable(torch.tensor([1], dtype = torch.long)).cuda())
+            loss, classification = model.loss(frame_sequence, Variable(torch.tensor([0], dtype = torch.long)).cuda())
             loss.backward()
             optimizer.step()
 
@@ -96,14 +96,14 @@ def main():
                 phase = "ANOMALY_DETECTION"
                 print("In ANOMALY DETECTION phase")
             
-        if phase == "ANOMALY DETECTION":
+        if phase == "ANOMALY_DETECTION":
             if random.random() > 0.9:
                 random_idx = random.choice(states_seq)
-                if random_idx != states_seq[states_seq_idx % len(states_seq))]:
+                if random_idx != states_seq[states_seq_idx % len(states_seq)]:
                     print("ANOMALY INTRODUCED")
-                next_frame = images_list[random_idx]
+                next_frame = images_list[random_idx].unsqueeze(0)
             else:    
-                next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
+                next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]].unsqueeze(0)
             
             frame_sequence = torch.cat([next_frame, seq_pack[:-1]])
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])

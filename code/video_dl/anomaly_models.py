@@ -155,9 +155,9 @@ class BetterAnomalyModel(nn.Module):
     
     def init_hidden(self):
         if use_cuda:
-            hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size)).cuda()
+            hidden = Variable(torch.randn((self._gru.num_layers * 1, 1, self._hidden_size))).cuda()
         else:
-            hidden = Variable(torch.zeros(self._gru.num_layers * 1, 1, self._hidden_size))
+            hidden = Variable(torch.randn((self._gru.num_layers * 1, 1, self._hidden_size)))
         return hidden
 
     def forward(self, input_t):
