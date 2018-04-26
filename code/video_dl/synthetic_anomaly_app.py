@@ -95,7 +95,10 @@ def main():
             #frame_sequence = torch.cat([seq_pack[1:], next_frame])
             seq_pack = frame_sequence.clone()
             frame_sequence = Variable(frame_sequence)
-            loss, classification = model.loss(frame_sequence, Variable(torch.tensor([0], dtype = torch.long)).cuda())
+            loss, classification = model.loss(frame_sequence, target)
+            print(loss.data.item())
+            print(classification)
+            print(target)
             loss.backward()
             optimizer.step()
 
