@@ -40,7 +40,7 @@ class FeatureExtractor():
         '''
         Returns the features extracted for that frame
         '''
-        features = return extract_features(self._last_k_xs, self._last_k_ys, 
+        features = extract_features(self._last_k_xs, self._last_k_ys, 
                                 self._last_k_rs, self._last_k_os)
 
         self._last_k_xs = self._last_k_xs[1:self._k] + [x]
@@ -127,8 +127,9 @@ def main():
             next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
             x, y, r, o = find_geometric_figure_data(next_frame)
             
-            if nb_steps > k:
-                features = feature_extractor.step(x, y, r, o)
+            features = feature_extractor.step(x, y, r, o)
+
+            if nb_steps > k:    
                 X_train_l.append(features)
                 Y_train_x_l.append(x)
                 Y_train_y_l.append(y)
@@ -141,9 +142,9 @@ def main():
                 for Y_train_l in [Y_train_x_l, Y_train_y_l, Y_train_r_l, Y_train_o_l]:
 
                     model, _, _ = train_model(
-                        np.array(X_train_l[200:]), 
+                        np.array(X_train_l[200:,:]), 
                         np.array(Y_train_l[200:]),
-                        np.array(X_train_l[:200]),
+                        np.array(X_train_l[:200,:]),
                         np.array(Y_train_l[:200])
                     )
                     models.append(model)

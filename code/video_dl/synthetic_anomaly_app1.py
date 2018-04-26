@@ -124,17 +124,18 @@ def main():
             else:
                 next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
             
+            features = feature_extractor.step(next_frame)
+            
             if nb_steps > k:
-                features = feature_extractor.step(next_frame)
                 X_train_l.append(features)
                 Y_train_l.append(target)
 
             if nb_steps > max_nb_steps:
                 #1. Build model
                 model, _, _ = train_model(
-                    np.array(X_train_l[200:]), 
+                    np.array(X_train_l[200:,:]), 
                     np.array(Y_train_l[200:]),
-                    np.array(X_train_l[:200]),
+                    np.array(X_train_l[:200,:]),
                     np.array(Y_train_l[:200])
                 )
                 
