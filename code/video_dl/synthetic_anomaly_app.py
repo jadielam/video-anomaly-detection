@@ -40,7 +40,7 @@ def main():
     images_folder = conf['generator']['images_folder']
     states_seq = conf['generator']['states_seq']
     max_nb_steps = conf['generator']['max_nb_steps']
-    images_path_list = [os.path.join(images_folder, a) for a in os.listdir(images_folder) if a.endswith(".png")]
+    images_path_list = [os.path.join(images_folder, a) for a in os.listdir(images_folder) if a.endswith(".jpg")]
     images_path_list.sort()
     images_list = [Image.open(im_path) for im_path in images_path_list]
     
@@ -84,7 +84,7 @@ def main():
 
         if phase == "TRAINING":
             target = Variable(torch.tensor([0], dtype = torch.long)).cuda()
-            if random.random() > 0.6:
+            if random.random() > 0.5:
                 random_idx = random.choice(states_seq)
                 if random_idx != states_seq[states_seq_idx % len(states_seq)]:
                     target = Variable(torch.tensor([1], dtype = torch.long)).cuda()
@@ -102,7 +102,7 @@ def main():
             loss.backward()
             optimizer.step()
 
-            if change_phase(loss, classification) or nb_steps > max_nb_steps:
+            if change_phase(loss, classification) and nb_steps > 300:
                 phase = "ANOMALY_DETECTION"
                 print("In ANOMALY DETECTION phase")
             
