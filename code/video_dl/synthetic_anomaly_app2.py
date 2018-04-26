@@ -5,10 +5,14 @@ import random
 import numpy as np
 import cv2
 import xgboost as xgb
+import math
 import config
 
-def is_anomaly(classification):
-    return classification[0] == 1
+def is_anomaly(x, y, r, o, px, py, pr, po):
+    dist = math.hypot(x - px, y - py)
+    if dist > 20:
+        return True
+    return False
 
 def find_geometric_figure_data(im):
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -32,19 +36,19 @@ class FeatureExtractor():
         self._last_k_rs = []
         self._last_k_os = []
     
-    def step(self, frame):
+    def step(self, x, y, r, o):
         '''
         Returns the features extracted for that frame
         '''
-        x, y, r, o = find_geometric_figure_data(frame)
+        features = return extract_features(self._last_k_xs, self._last_k_ys, 
+                                self._last_k_rs, self._last_k_os)
 
         self._last_k_xs = self._last_k_xs[1:self._k] + [x]
         self._last_k_ys = self._last_k_ys[1:self._k] + [y]
         self._last_k_rs = self._last_k_rs[1:self._k] + [r]
         self._last_k_os = self._last_k_os[1:self._k] + [o]
 
-        return extract_features(self._last_k_xs, self._last_k_ys, 
-                                self._last_k_rs, self._last_k_os)
+        return features
 
 def train_model(X_train, y_train, X_val, y_val,             
                 parameters = {},
@@ -53,10 +57,9 @@ def train_model(X_train, y_train, X_val, y_val,
                 num_class = 2):
     
     default_params = {
-                    "objective": "multi:softmax",
-                    "num_class": num_class,
+                    "objective": "reg:linear",
                     "booster": "gbtree",
-                    "eval_metric": "mlogloss",
+                    "eval_metric": "mae",
                     "eta": 0.02,
                     "max_depth": 4,
                     "subsample": 0.6,
@@ -109,34 +112,41 @@ def main():
     print("In TRAINING phase")
     feature_extractor = FeatureExtractor(k)
     X_train_l = []
-    Y_train_l = []
+    Y_train_x_l = []
+    Y_train_y_l = []
+    Y_train_r_l = []
+    Y_train_o_l = []
+    models = []
 
     while True:
         states_seq_idx += 1
         nb_steps += 1
         target = 0
         if phase == "TRAINING":
-            if random.random() > 0.5:
-                random_idx = random.choice(range(len(images_list)))
-                if random_idx != states_seq[states_seq_idx % len(states_seq)]:
-                    target = 1
-                next_frame = images_list[random_idx]
-            else:
-                next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
+            
+            next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
+            x, y, r, o = find_geometric_figure_data(next_frame)
             
             if nb_steps > k:
-                features = feature_extractor.step(next_frame)
+                features = feature_extractor.step(x, y, r, o)
                 X_train_l.append(features)
-                Y_train_l.append(target)
+                Y_train_x_l.append(x)
+                Y_train_y_l.append(y)
+                Y_train_r_l.append(r)
+                Y_train_o_l.append(o)
 
             if nb_steps > max_nb_steps:
-                #1. Build model
-                model, _, _ = train_model(
-                    np.array(X_train_l[200:]), 
-                    np.array(Y_train_l[200:]),
-                    np.array(X_train_l[:200]),
-                    np.array(Y_train_l[:200])
-                )
+                #1. Build models
+
+                for Y_train_l in [Y_train_x_l, Y_train_y_l, Y_train_r_l, Y_train_o_l]:
+
+                    model, _, _ = train_model(
+                        np.array(X_train_l[200:]), 
+                        np.array(Y_train_l[200:]),
+                        np.array(X_train_l[:200]),
+                        np.array(Y_train_l[:200])
+                    )
+                    models.append(model)
                 
                 #2. Announce change to anomaly detection phase
                 phase = "ANOMALY_DETECTION"
@@ -151,11 +161,11 @@ def main():
             else:    
                 next_frame = images_list[states_seq[states_seq_idx % len(states_seq)]]
             
-            features = feature_extractor.step(next_frame)
-            
-            classification = predict_with_model(model, features)
-            
-            if is_anomaly(classification):
+            x, y, r, o = find_geometric_figure_data(next_frame)
+            features = feature_extractor.step(x, y, r, o)
+            px, py, pr, po = [predict_with_model(model, features) for model in models]
+                    
+            if is_anomaly(x, y, r, o, px, py, pr, po):
                 print("ANOMALY DETECTED")
 
 if __name__ == "__main__":
