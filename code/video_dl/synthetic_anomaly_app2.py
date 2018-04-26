@@ -31,10 +31,10 @@ def extract_features(last_k_xs, last_k_ys, last_k_rs, last_k_os):
 class FeatureExtractor():
     def __init__(self, k):
         self._k = k
-        self._last_k_xs = []
-        self._last_k_ys = []
-        self._last_k_rs = []
-        self._last_k_os = []
+        self._last_k_xs = [-1] * self._k
+        self._last_k_ys = [-1] * self._k
+        self._last_k_rs = [-1] * self._k
+        self._last_k_os = [-1] * self._k
     
     def step(self, x, y, r, o):
         '''
@@ -42,7 +42,7 @@ class FeatureExtractor():
         '''
         features = extract_features(self._last_k_xs, self._last_k_ys, 
                                 self._last_k_rs, self._last_k_os)
-
+        
         self._last_k_xs = self._last_k_xs[1:self._k] + [x]
         self._last_k_ys = self._last_k_ys[1:self._k] + [y]
         self._last_k_rs = self._last_k_rs[1:self._k] + [r]
@@ -142,9 +142,9 @@ def main():
                 for Y_train_l in [Y_train_x_l, Y_train_y_l, Y_train_r_l, Y_train_o_l]:
 
                     model, _, _ = train_model(
-                        np.array(X_train_l[200:,:]), 
+                        np.array(X_train_l[200:]), 
                         np.array(Y_train_l[200:]),
-                        np.array(X_train_l[:200,:]),
+                        np.array(X_train_l[:200]),
                         np.array(Y_train_l[:200])
                     )
                     models.append(model)

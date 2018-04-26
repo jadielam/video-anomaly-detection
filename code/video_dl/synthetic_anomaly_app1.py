@@ -27,10 +27,10 @@ def extract_features(last_k_xs, last_k_ys, last_k_rs, last_k_os):
 class FeatureExtractor():
     def __init__(self, k):
         self._k = k
-        self._last_k_xs = []
-        self._last_k_ys = []
-        self._last_k_rs = []
-        self._last_k_os = []
+        self._last_k_xs = [] * self._k
+        self._last_k_ys = [] * self._k
+        self._last_k_rs = [] * self._k
+        self._last_k_os = [] * self._k
     
     def step(self, frame):
         '''
